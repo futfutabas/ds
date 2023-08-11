@@ -5,7 +5,7 @@ from ignite.metrics import Metric
 from ignite.metrics.metric import sync_all_reduce, reinit__is_reduced
 
 from torch import nn
-import segmentation_models_pytorch as smp
+import seq.segmentation_models_pytorch.utils as smp
 
 from dice_helpers import *
 
@@ -40,7 +40,7 @@ class Loss(Metric):
           criterion = nn.BCELoss() 
           #criterion = nn.BCELoss(weight=torch.tensor(10, dtype=torch.float32, device=torch.device("cuda" if torch.cuda.is_available() else "cpu")))
       if self._loss_name == "DICE":
-          criterion = smp.utils.losses.DiceLoss()
+          criterion = smp.losses.DiceLoss()
       
       y_pred, y = output
 

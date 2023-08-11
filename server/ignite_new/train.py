@@ -19,8 +19,7 @@ from recall import Recall
 from ignite.engine import Engine, _prepare_batch
 from ignite.handlers import ModelCheckpoint
 
-import segmentation_models_pytorch as smp
-
+import seq.segmentation_models_pytorch.utils as smp
 from dice_helpers import *
 
 def run_experiment(model,
@@ -56,7 +55,7 @@ def run_experiment(model,
         criterion = nn.BCELoss()
         #criterion = nn.BCELoss(weight=torch.tensor(10, dtype=torch.float32, device=torch.device("cuda" if torch.cuda.is_available() else "cpu")))
     if loss_name == "DICE":
-        criterion = smp.utils.losses.DiceLoss()
+        criterion = smp.losses.DiceLoss()
 
     # main training cycle
     def process_function(engine, batch):
@@ -67,10 +66,10 @@ def run_experiment(model,
         masks = masks.to(device)
         preds = model.forward(images)
         n = preds.shape[0]
-        plt.imsave('/content/drive/My Drive/Colab Files/server/img_check/img.png', tensor2numpy(images[0]))
-        plt.imsave('/content/drive/My Drive/Colab Files/server/img_check/mask.png', tensor2numpy(masks[0]))
-        plt.imsave('/content/drive/My Drive/Colab Files/server/img_check/pred.png', tensor2numpy(preds[0]))
-        plt.imsave('/content/drive/My Drive/Colab Files/server/img_check/pred_bin.png', tensor2numpy((preds[0] - threshold).clamp_min(0).sign()))
+        plt.imsave('/content/VEINCV-RL/server/img_check/img.png', tensor2numpy(images[0]))
+        plt.imsave('/content/VEINCV-RL/server/img_check/mask.png', tensor2numpy(masks[0]))
+        plt.imsave('/content/VEINCV-RL/server/img_check/pred.png', tensor2numpy(preds[0]))
+        plt.imsave('/content/VEINCV-RL/server/img_check/pred_bin.png', tensor2numpy((preds[0] - threshold).clamp_min(0).sign()))
         if loss_name == "clDICE":
             loss = torch.mean(soft_cldice_loss(preds, masks, target_skeleton=None))
         else:    
@@ -88,12 +87,12 @@ def run_experiment(model,
     trainer = Engine(process_function)
     
     # evaluation and metrics calculation
-    metrics= {'IoU': IoU(threshold),
-              'mIoU': mIoU(threshold),
-              'SSIM': SSIM(threshold),
-              'Precision': Precision(threshold),
-              'Recall': Recall(threshold),
-          loss_name: Loss(loss_name)}
+    metrics= {'IoU': IoU(threshold,device=device),
+              'mIoU': mIoU(threshold,device=device),
+              'SSIM': SSIM(threshold,device=device),
+              'Precision': Precision(threshold,device=device),
+              'Recall': Recall(threshold,device=device),
+          loss_name: Loss(loss_name,device=device)}
           #loss_name: Tversky_Loss()}
 
     train_evaluator = create_supervised_evaluator(model, metrics, device=device)
@@ -160,7 +159,7 @@ def run_experiment(model,
         val_avg_accuracy = val_evaluator.state.metrics['IoU']
         return val_avg_accuracy
 
-    best_model_saver = ModelCheckpoint("/content/drive/My Drive/Colab Files/server/best_models",  
+    best_model_saver = ModelCheckpoint("/content/VEINCV-RL/server/best_models",  
                                        filename_prefix="AttU_Net",
                                        score_name="val_accuracy",  
                                        score_function=score_function,

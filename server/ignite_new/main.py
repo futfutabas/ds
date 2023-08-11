@@ -9,7 +9,7 @@ from architectures.base_unet_architecture import *
 from ax.service.managed_loop import optimize
 
 # Paths loading
-main_path = '/content/drive/My Drive/Colab Files/server/dataset_90/'
+main_path = '/content/VEINCV-RL/server/dataset_90/'
 #main_path = '/content/drive/My Drive/Colab Files/server/dataset/'
 train_img_fold = main_path + 'img/train/'
 val_img_fold = main_path + 'img/val/'
@@ -36,7 +36,7 @@ experiment = run_experiment(
     parameters={
         "lr": 1e-4,
         "optimizer_name": "Adam",
-        "epochs": 300,
+        "epochs": 5,
         "batch_size": 3,
       	"threshold": 0.4,
         "loss_name": "DICE",

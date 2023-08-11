@@ -6,7 +6,7 @@ from ignite.metrics.metric import sync_all_reduce, reinit__is_reduced
 
 from utils import *
 #from skimage.measure import structural_similarity as ssim
-from skimage import measure
+from skimage.metrics import structural_similarity as compare_ssim
 
 import torch
 import numpy as np
@@ -39,7 +39,7 @@ class SSIM(Metric):
       """
       y_pred, y = output
 
-      self._ssim_sum += measure.compare_ssim(tensor2numpy(y[0]), tensor2numpy((y_pred[0] - self._threshold).clamp_min(0).sign()))
+      self._ssim_sum += compare_ssim(tensor2numpy(y[0]), tensor2numpy((y_pred[0] - self._threshold).clamp_min(0).sign()))
       self._num_examples += 1
 
     @sync_all_reduce("_num_examples")
